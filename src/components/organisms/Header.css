@@ -44,6 +44,11 @@
   color: #fff;
 }
 
+.header__end {
+  display: flex;
+  align-items: center;
+}
+
 .header__tagline {
   font-size: var(--fs-xs);
   font-weight: 600;

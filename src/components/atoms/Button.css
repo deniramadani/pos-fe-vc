@@ -85,3 +85,15 @@
 .btn--full {
   width: 100%;
 }
+
+/* ghost-light — ghost button for dark/navy backgrounds */
+.btn--ghost-light {
+  background: transparent;
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+}
+.btn--ghost-light:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.8);
+}
+

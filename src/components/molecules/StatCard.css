@@ -1,0 +1,81 @@
+/* ── MOLECULE: StatCard ─────────────────────────────────── */
+.stat-card {
+  background:    var(--bg-surface);
+  border:        var(--border);
+  border-radius: var(--r-md);
+  padding:       var(--sp-4) var(--sp-5);
+  display:       flex;
+  align-items:   center;
+  gap:           var(--sp-4);
+  position:      relative;
+  overflow:      hidden;
+  box-shadow:    var(--shadow-sm);
+  transition:    box-shadow var(--transition), transform var(--transition);
+}
+
+.stat-card:hover {
+  box-shadow: var(--shadow-md);
+  transform:  translateY(-1px);
+}
+
+/* Coloured top stripe */
+.stat-card::before {
+  content:       '';
+  position:      absolute;
+  top: 0; left: 0; right: 0;
+  height:        4px;
+  border-radius: var(--r-md) var(--r-md) 0 0;
+}
+
+.stat-card--orange::before { background: var(--c-orange); }
+.stat-card--red::before    { background: var(--c-red);    }
+.stat-card--yellow::before { background: var(--c-yellow); }
+.stat-card--navy::before   { background: var(--c-navy);   }
+
+/* Icon circle */
+.stat-card__icon {
+  font-size:      28px;
+  line-height:    1;
+  width:          52px;
+  height:         52px;
+  border-radius:  50%;
+  display:        flex;
+  align-items:    center;
+  justify-content: center;
+  flex-shrink:    0;
+  background:     var(--bg-surface-alt);
+}
+
+.stat-card--orange .stat-card__icon { background: rgba(247,127,0,.1); }
+.stat-card--red    .stat-card__icon { background: rgba(214,40,40,.1); }
+.stat-card--yellow .stat-card__icon { background: rgba(252,191,73,.15); }
+.stat-card--navy   .stat-card__icon { background: rgba(0,48,73,.07); }
+
+/* Body */
+.stat-card__body {
+  display:        flex;
+  flex-direction: column;
+  gap:            2px;
+}
+
+.stat-card__value {
+  font-size:   var(--fs-2xl);
+  font-weight: 800;
+  color:       var(--c-navy);
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+}
+
+.stat-card__label {
+  font-size:   var(--fs-sm);
+  font-weight: 600;
+  color:       var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-card__sub {
+  font-size:  var(--fs-xs);
+  color:      var(--text-muted);
+  opacity:    0.75;
+}

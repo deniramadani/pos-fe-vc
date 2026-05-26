@@ -1,0 +1,62 @@
+/* ── ORGANISM: BackOffice ───────────────────────────────── */
+.back-office {
+  display:        flex;
+  flex-direction: column;
+  height:         100vh;
+  overflow:       hidden;
+  background:     var(--bg-page);
+}
+
+/* ── Tab bar ── */
+.back-office__tabs {
+  display:          flex;
+  background:       var(--bg-surface);
+  border-bottom:    2px solid var(--border-color);
+  padding:          0 var(--sp-6);
+  flex-shrink:      0;
+}
+
+.back-office__tab {
+  display:        flex;
+  align-items:    center;
+  gap:            var(--sp-2);
+  padding:        var(--sp-3) var(--sp-5);
+  background:     transparent;
+  border:         none;
+  border-bottom:  3px solid transparent;
+  margin-bottom:  -2px;
+  cursor:         pointer;
+  font-family:    var(--font);
+  font-size:      var(--fs-md);
+  font-weight:    600;
+  color:          var(--text-muted);
+  transition:     color var(--transition-fast), border-color var(--transition-fast);
+  white-space:    nowrap;
+}
+
+.back-office__tab:hover {
+  color: var(--c-navy);
+}
+
+.back-office__tab--active {
+  color:        var(--c-navy);
+  border-bottom-color: var(--c-orange);
+}
+
+.back-office__tab-icon {
+  font-size: 17px;
+  line-height: 1;
+}
+
+/* ── Content area ── */
+.back-office__content {
+  flex:       1;
+  overflow-y: auto;
+  background: var(--bg-page);
+}
+
+.back-office__content::-webkit-scrollbar { width: 6px; }
+.back-office__content::-webkit-scrollbar-thumb {
+  background:    rgba(0,48,73,.15);
+  border-radius: var(--r-pill);
+}

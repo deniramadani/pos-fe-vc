@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "Bash(npx tsc *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git push *)",
+      "Bash(git commit -m 'docs: update README with atomic design structure and UX patterns *)",
+      "Bash(gh repo *)",
+      "PowerShell(gh repo rename POS-FE-VC --repo deniramadani/pos-vc 2>&1)",
+      "PowerShell($token = \\(git -C \"c:\\\\Users\\\\deni.ramadani.os\\\\Desktop\\\\pos-vc\" config --get credential.helper 2>$null\\); Write-Output \"credential helper: $token\")",
+      "PowerShell($env:GITHUB_TOKEN = \\(cmdkey /list | Select-String \"git:https://github.com\" | ForEach-Object { \"\" }\\) 2>$null; Write-Output \"done\")"
     ]
   }
 }

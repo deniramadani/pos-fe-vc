@@ -1,0 +1,84 @@
+/* ── MOLECULE: ProductForm ──────────────────────────────── */
+.product-form {
+  background:    var(--bg-surface);
+  border:        1.5px solid var(--c-orange);
+  border-radius: var(--r-lg);
+  padding:       var(--sp-5) var(--sp-6);
+  margin-bottom: var(--sp-5);
+  animation:     formSlideDown 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes formSlideDown {
+  from { transform: translateY(-10px); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+
+.product-form__title {
+  font-size:     var(--fs-lg);
+  font-weight:   700;
+  color:         var(--c-navy);
+  margin-bottom: var(--sp-4);
+}
+
+.product-form__grid {
+  display:               grid;
+  grid-template-columns: 1fr 1fr;
+  gap:                   var(--sp-4);
+  margin-bottom:         var(--sp-5);
+}
+
+.product-form__field {
+  display:        flex;
+  flex-direction: column;
+  gap:            var(--sp-1);
+}
+
+.product-form__field--full {
+  grid-column: 1 / -1;
+}
+
+.product-form__label {
+  font-size:   var(--fs-xs);
+  font-weight: 700;
+  color:       var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.product-form__input {
+  height:        38px;
+  padding:       0 var(--sp-3);
+  border:        1.5px solid var(--border-color);
+  border-radius: var(--r-sm);
+  font-size:     var(--fs-md);
+  font-family:   var(--font);
+  color:         var(--c-navy);
+  background:    var(--bg-surface);
+  transition:    border-color var(--transition-fast), box-shadow var(--transition-fast);
+  outline:       none;
+}
+
+.product-form__input:focus {
+  border-color: var(--c-orange);
+  box-shadow:   0 0 0 3px rgba(247,127,0,.12);
+}
+
+.product-form__input--error {
+  border-color: var(--c-red);
+}
+
+.product-form__input--error:focus {
+  box-shadow: 0 0 0 3px rgba(214,40,40,.12);
+}
+
+.product-form__error {
+  font-size: var(--fs-xs);
+  color:     var(--c-red);
+  font-weight: 500;
+}
+
+.product-form__actions {
+  display:         flex;
+  justify-content: flex-end;
+  gap:             var(--sp-2);
+}

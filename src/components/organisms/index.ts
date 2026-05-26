@@ -1,4 +1,8 @@
-export { Header }            from './Header';
-export { ProductSection }    from './ProductSection';
-export { CartPanel }         from './CartPanel';
-export { TransactionPanel }  from './TransactionPanel';
+export { Header }                from './Header';
+export { ProductSection }        from './ProductSection';
+export { CartPanel }             from './CartPanel';
+export { TransactionPanel }      from './TransactionPanel';
+export { DashboardPanel }        from './DashboardPanel';
+export { ProductManagerPanel }   from './ProductManagerPanel';
+export { TransactionLogPanel }   from './TransactionLogPanel';
+export { BackOffice }            from './BackOffice';

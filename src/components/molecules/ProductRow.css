@@ -1,0 +1,26 @@
+/* ── MOLECULE: ProductRow ───────────────────────────────── */
+.product-row {
+  transition: background var(--transition-fast);
+}
+
+.product-row:hover {
+  background: var(--bg-surface-alt);
+}
+
+.product-row td {
+  padding:       var(--sp-3) var(--sp-4);
+  font-size:     var(--fs-md);
+  color:         var(--c-navy);
+  border-bottom: var(--border);
+  vertical-align: middle;
+}
+
+.product-row__name {
+  font-weight: 600;
+}
+
+.product-row__actions {
+  display:    flex;
+  gap:        var(--sp-2);
+  align-items: center;
+}

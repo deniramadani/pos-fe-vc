@@ -1,0 +1,75 @@
+/* ── ORGANISM: ProductManagerPanel ──────────────────────── */
+.product-manager {
+  padding: var(--sp-6);
+  max-width: 900px;
+}
+
+/* Toolbar */
+.product-manager__toolbar {
+  display:         flex;
+  align-items:     flex-start;
+  justify-content: space-between;
+  margin-bottom:   var(--sp-5);
+  gap:             var(--sp-4);
+}
+
+.product-manager__title {
+  font-size:   var(--fs-2xl);
+  font-weight: 800;
+  color:       var(--c-navy);
+}
+
+.product-manager__sub {
+  font-size: var(--fs-sm);
+  color:     var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ConfirmBar spacing */
+.product-manager__confirm {
+  margin-bottom: var(--sp-4);
+}
+
+/* Empty state */
+.product-manager__empty {
+  padding:    var(--sp-8);
+  text-align: center;
+  color:      var(--text-muted);
+  background: var(--bg-surface-alt);
+  border:     var(--border);
+  border-radius: var(--r-md);
+  font-size:  var(--fs-md);
+}
+
+/* Table */
+.product-manager__table-wrap {
+  overflow-x: auto;
+  border:     var(--border);
+  border-radius: var(--r-md);
+  background: var(--bg-surface);
+}
+
+.product-manager__table {
+  width:           100%;
+  border-collapse: collapse;
+}
+
+.product-manager__table th {
+  font-size:      var(--fs-xs);
+  font-weight:    700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color:          var(--text-muted);
+  padding:        var(--sp-3) var(--sp-4);
+  border-bottom:  2px solid var(--border-color);
+  text-align:     left;
+  background:     var(--bg-surface-alt);
+}
+
+.product-manager__table th:last-child {
+  text-align: right;
+}
+
+.product-manager__table .product-row__actions {
+  justify-content: flex-end;
+}
