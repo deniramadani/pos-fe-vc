@@ -22,6 +22,7 @@ interface BackOfficeProps {
   onAddProduct:    (data: Omit<Product, 'id'>) => void;
   onUpdateProduct: (product: Product) => void;
   onDeleteProduct: (productId: string) => void;
+  headerAction?:   React.ReactNode;   /* user chip + logout from App */
 }
 
 /**
@@ -36,6 +37,7 @@ export const BackOffice: React.FC<BackOfficeProps> = ({
   onAddProduct,
   onUpdateProduct,
   onDeleteProduct,
+  headerAction,
 }) => {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
 
@@ -44,9 +46,12 @@ export const BackOffice: React.FC<BackOfficeProps> = ({
       <Header
         title="Back Office"
         action={
-          <Button variant="ghost-light" size="sm" onClick={onGoToPOS} type="button">
-            ← Go to POS
-          </Button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Button variant="ghost-light" size="sm" onClick={onGoToPOS} type="button">
+              ← Go to POS
+            </Button>
+            {headerAction}
+          </div>
         }
       />
 

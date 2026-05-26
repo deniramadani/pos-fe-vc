@@ -65,6 +65,45 @@ body {
   overflow:   hidden;
 }
 
+/* ── Header action area ── */
+.app__header-actions {
+  display:     flex;
+  align-items: center;
+  gap:         var(--sp-3);
+}
+
+/* User chip (shown in header across all views) */
+.app__user-chip {
+  display:     flex;
+  align-items: center;
+  gap:         var(--sp-2);
+}
+
+.app__username {
+  font-size:   var(--fs-sm);
+  font-weight: 600;
+  color:       rgba(255, 255, 255, 0.9);
+}
+
+.app__logout-btn {
+  background:  transparent;
+  border:      none;
+  color:       rgba(255, 255, 255, 0.55);
+  font-size:   var(--fs-xs);
+  font-family: var(--font);
+  font-weight: 600;
+  cursor:      pointer;
+  padding:     var(--sp-1) var(--sp-2);
+  border-radius: var(--r-sm);
+  transition:  color var(--transition-fast), background var(--transition-fast);
+  white-space: nowrap;
+}
+
+.app__logout-btn:hover {
+  color:       #fff;
+  background:  rgba(255, 255, 255, 0.1);
+}
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .app__body {

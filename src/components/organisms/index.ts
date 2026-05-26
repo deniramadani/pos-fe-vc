@@ -6,3 +6,4 @@ export { DashboardPanel }        from './DashboardPanel';
 export { ProductManagerPanel }   from './ProductManagerPanel';
 export { TransactionLogPanel }   from './TransactionLogPanel';
 export { BackOffice }            from './BackOffice';
+export { LoginPage }             from './LoginPage';
