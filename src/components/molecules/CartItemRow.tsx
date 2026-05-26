@@ -32,6 +32,7 @@ export const CartItemRow: React.FC<CartItemRowProps> = ({
           value={item.quantity}
           onChange={qty => onUpdateQuantity(item.product.id, qty)}
           min={0}
+          max={item.product.stock}
         />
         <Price amount={lineTotal} size="md" color="default" />
         <Button

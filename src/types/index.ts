@@ -6,10 +6,11 @@ export interface User {
 }
 
 export interface Product {
-  id: string;
-  name: string;
-  price: number;
+  id:       string;
+  name:     string;
+  price:    number;
   category: string;
+  stock:    number;
 }
 
 export interface CartItem {

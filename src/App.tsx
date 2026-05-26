@@ -81,34 +81,92 @@ const App: React.FC = () => {
   };
 
   /* ── Cart handlers ── */
-  const handleAddToCart = (product: Product) => {
+  const handleAddToCart = useCallback((product: Product) => {
+    /* Look up live stock from products state */
+    const liveProduct = products.find(p => p.id === product.id) ?? product;
+    const liveStock   = liveProduct.stock;
+
+    if (liveStock === 0) {
+      pushToast({ type: 'error', message: `"${product.name}" is out of stock`, duration: 3000 });
+      return;
+    }
+
     setCart(prev => {
       const existing = prev.find(i => i.product.id === product.id);
-      if (existing)
+      const currentQty = existing?.quantity ?? 0;
+
+      if (currentQty >= liveStock) {
+        pushToast({
+          type: 'error',
+          message: `Only ${liveStock} "${product.name}" in stock`,
+          duration: 3000,
+        });
+        return prev;  /* no change */
+      }
+
+      if (existing) {
         return prev.map(i =>
-          i.product.id === product.id ? { ...i, quantity: i.quantity + 1 } : i
+          i.product.id === product.id
+            ? { ...i, product: liveProduct, quantity: i.quantity + 1 }
+            : i
         );
-      return [...prev, { product, quantity: 1 }];
+      }
+      return [...prev, { product: liveProduct, quantity: 1 }];
     });
-  };
+  }, [products, pushToast]);
 
-  const handleRemoveFromCart = (productId: string) =>
-    setCart(prev => prev.filter(i => i.product.id !== productId));
+  const handleRemoveFromCart = useCallback((productId: string) =>
+    setCart(prev => prev.filter(i => i.product.id !== productId)),
+  []);
 
-  const handleUpdateQuantity = (productId: string, quantity: number) => {
+  const handleUpdateQuantity = useCallback((productId: string, quantity: number) => {
     if (quantity <= 0) { handleRemoveFromCart(productId); return; }
+    /* Cap at current live stock */
+    const liveStock = products.find(p => p.id === productId)?.stock ?? Infinity;
+    const capped    = Math.min(quantity, liveStock);
     setCart(prev =>
-      prev.map(i => (i.product.id === productId ? { ...i, quantity } : i))
+      prev.map(i => (i.product.id === productId ? { ...i, quantity: capped } : i))
     );
-  };
+  }, [products, handleRemoveFromCart]);
 
-  const handleCheckout = (paymentMethod: 'cash' | 'card') => {
+  const handleCheckout = useCallback((paymentMethod: 'cash' | 'card') => {
     if (cart.length === 0) return;
-    const total = cart.reduce((s, i) => s + i.product.price * i.quantity, 0);
+
+    /* Validate against live stock and cap quantities */
+    let invalid = false;
+    const validatedCart = cart.map(item => {
+      const liveStock = products.find(p => p.id === item.product.id)?.stock ?? item.product.stock;
+      if (liveStock === 0) { invalid = true; return item; }
+      return { ...item, quantity: Math.min(item.quantity, liveStock) };
+    }).filter(item => {
+      const liveStock = products.find(p => p.id === item.product.id)?.stock ?? item.product.stock;
+      return liveStock > 0;
+    });
+
+    if (invalid) {
+      pushToast({
+        type:    'error',
+        message: 'Some items are out of stock — cart updated',
+        duration: 4000,
+      });
+      setCart(validatedCart);
+      if (validatedCart.length === 0) return;
+    }
+
+    const total = validatedCart.reduce((s, i) => s + i.product.price * i.quantity, 0);
+
+    /* Decrement stock for each item */
+    setProducts(prev =>
+      prev.map(p => {
+        const sold = validatedCart.find(i => i.product.id === p.id);
+        return sold ? { ...p, stock: Math.max(0, p.stock - sold.quantity) } : p;
+      })
+    );
+
     setTransactions(prev => [
       {
         id: Date.now().toString(),
-        items: [...cart],
+        items: validatedCart,
         total,
         timestamp: new Date(),
         paymentMethod,
@@ -122,7 +180,7 @@ const App: React.FC = () => {
       sub:      `$${total.toFixed(2)} paid by ${paymentMethod === 'cash' ? '💵 cash' : '💳 card'}`,
       duration: 4000,
     });
-  };
+  }, [cart, products, pushToast]);
 
   const handleClearCart = () => {
     setCart([]);
@@ -198,7 +256,11 @@ const App: React.FC = () => {
 
       <div className="app__body">
         <main className="app__products">
-          <ProductSection products={products} onAddToCart={handleAddToCart} />
+          <ProductSection
+            products={products}
+            onAddToCart={handleAddToCart}
+            cartQty={id => cart.find(i => i.product.id === id)?.quantity ?? 0}
+          />
         </main>
         <aside className="app__sidebar">
           <CartPanel

@@ -6,6 +6,7 @@ import './ProductSection.css';
 interface ProductSectionProps {
   products:    Product[];
   onAddToCart: (product: Product) => void;
+  cartQty?:    (productId: string) => number;   /* units already in cart */
 }
 
 /**
@@ -15,6 +16,7 @@ interface ProductSectionProps {
 export const ProductSection: React.FC<ProductSectionProps> = ({
   products,
   onAddToCart,
+  cartQty,
 }) => {
   const categories = Array.from(new Set(products.map(p => p.category)));
 
@@ -32,6 +34,7 @@ export const ProductSection: React.FC<ProductSectionProps> = ({
                 <ProductCard
                   key={product.id}
                   product={product}
+                  cartQty={cartQty ? cartQty(product.id) : 0}
                   onAdd={onAddToCart}
                 />
               ))}

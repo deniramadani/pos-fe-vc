@@ -20,19 +20,23 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   onSubmit,
   onCancel,
 }) => {
-  const uid         = useId();
-  const isEdit      = Boolean(product);
+  const uid    = useId();
+  const isEdit = Boolean(product);
 
   const [name,     setName]     = useState(product?.name     ?? '');
-  const [price,    setPrice]    = useState(product?.price    ?? '');
+  const [price,    setPrice]    = useState<string | number>(product?.price    ?? '');
   const [category, setCategory] = useState(product?.category ?? '');
+  const [stock,    setStock]    = useState<string | number>(product?.stock    ?? '');
   const [errors,   setErrors]   = useState<Record<string, string>>({});
+
+  const clearErr = (key: string) => setErrors(p => ({ ...p, [key]: '' }));
 
   const validate = () => {
     const e: Record<string, string> = {};
-    if (!name.trim())                    e.name     = 'Name is required';
-    if (!category.trim())                e.category = 'Category is required';
-    if (!price || Number(price) <= 0)    e.price    = 'Enter a price greater than 0';
+    if (!name.trim())                     e.name     = 'Name is required';
+    if (!category.trim())                 e.category = 'Category is required';
+    if (!price || Number(price) <= 0)     e.price    = 'Enter a price greater than 0';
+    if (stock === '' || Number(stock) < 0) e.stock   = 'Enter a stock quantity (0 or more)';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -40,7 +44,12 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-    onSubmit({ name: name.trim(), price: parseFloat(String(price)), category: category.trim() });
+    onSubmit({
+      name:     name.trim(),
+      price:    parseFloat(String(price)),
+      category: category.trim(),
+      stock:    parseInt(String(stock), 10),
+    });
   };
 
   return (
@@ -57,7 +66,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             className={`product-form__input ${errors.name ? 'product-form__input--error' : ''}`}
             type="text"
             value={name}
-            onChange={e => { setName(e.target.value); setErrors(p => ({ ...p, name: '' })); }}
+            onChange={e => { setName(e.target.value); clearErr('name'); }}
             placeholder="e.g. Espresso"
           />
           {errors.name && <span className="product-form__error">{errors.name}</span>}
@@ -70,12 +79,27 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             className={`product-form__input ${errors.price ? 'product-form__input--error' : ''}`}
             type="number"
             value={price}
-            onChange={e => { setPrice(e.target.value); setErrors(p => ({ ...p, price: '' })); }}
+            onChange={e => { setPrice(e.target.value); clearErr('price'); }}
             placeholder="0.00"
             min="0.01"
             step="0.01"
           />
           {errors.price && <span className="product-form__error">{errors.price}</span>}
+        </label>
+
+        {/* Stock */}
+        <label className="product-form__field">
+          <span className="product-form__label">Stock qty</span>
+          <input
+            className={`product-form__input ${errors.stock ? 'product-form__input--error' : ''}`}
+            type="number"
+            value={stock}
+            onChange={e => { setStock(e.target.value); clearErr('stock'); }}
+            placeholder="0"
+            min="0"
+            step="1"
+          />
+          {errors.stock && <span className="product-form__error">{errors.stock}</span>}
         </label>
 
         {/* Category */}
@@ -85,7 +109,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             className={`product-form__input ${errors.category ? 'product-form__input--error' : ''}`}
             type="text"
             value={category}
-            onChange={e => { setCategory(e.target.value); setErrors(p => ({ ...p, category: '' })); }}
+            onChange={e => { setCategory(e.target.value); clearErr('category'); }}
             list={`${uid}-cats`}
             placeholder="e.g. Beverages"
           />
