@@ -75,7 +75,7 @@ export const Cart: React.FC<Props> = ({
               type="radio"
               value="cash"
               checked={paymentMethod === 'cash'}
-              onChange={e => setPaymentMethod(e.target.value as 'cash' | 'card')}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPaymentMethod(e.target.value as 'cash' | 'card')}
             />
             Cash
           </label>
@@ -84,7 +84,7 @@ export const Cart: React.FC<Props> = ({
               type="radio"
               value="card"
               checked={paymentMethod === 'card'}
-              onChange={e => setPaymentMethod(e.target.value as 'cash' | 'card')}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPaymentMethod(e.target.value as 'cash' | 'card')}
             />
             Card
           </label>
