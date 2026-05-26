@@ -157,3 +157,24 @@
   font-weight:   600;
   letter-spacing: 0.3px;
 }
+
+/* Google button container */
+.login-form__google {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+}
+
+.login-form__google-btn {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  justify-content: center;
+}
+
+/* Tweak GSI rendered button appearance where possible */
+.login-form__google-btn .g_id_signin, .login-form__google-btn iframe {
+  width: 100% !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+}

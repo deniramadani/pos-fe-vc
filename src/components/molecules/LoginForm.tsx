@@ -4,13 +4,14 @@ import './LoginForm.css';
 
 interface LoginFormProps {
   onSubmit: (username: string, password: string) => boolean | Promise<boolean>;
+  onGoogle?: (idToken: string) => boolean | Promise<boolean>;
 }
 
 /**
  * Molecule — sign-in form with loading state and inline error.
  * Composes: Button (atom)
  */
-export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
+export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, onGoogle }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error,    setError]    = useState('');
@@ -36,6 +37,49 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
     }
     setLoading(false);
   };
+
+  /* Google Identity Services button */
+  const googleButtonRef = React.useRef<HTMLDivElement | null>(null);
+  React.useEffect(() => {
+    const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+    if (!clientId) return;
+
+    const existing = document.getElementById('gsi-client');
+    if (!existing) {
+      const s = document.createElement('script');
+      s.src = 'https://accounts.google.com/gsi/client';
+      s.id = 'gsi-client';
+      s.async = true;
+      s.defer = true;
+      document.head.appendChild(s);
+      s.onload = () => initGoogle();
+    } else {
+      initGoogle();
+    }
+
+    function initGoogle() {
+      // @ts-ignore - google identity script
+      if (window.google && googleButtonRef.current) {
+        // @ts-ignore
+        google.accounts.id.initialize({
+          client_id: clientId,
+          callback: (resp: any) => {
+            const token = resp?.credential;
+            if (token && onGoogle) {
+              void (async () => {
+                setLoading(true);
+                const ok = await onGoogle(token);
+                if (!ok) setError('Google sign-in failed');
+                setLoading(false);
+              })();
+            }
+          },
+        });
+        // @ts-ignore
+        google.accounts.id.renderButton(googleButtonRef.current, { theme: 'filled_blue', size: 'large' });
+      }
+    }
+  }, [onGoogle]);
 
   return (
     <form className="login-form" onSubmit={handleSubmit} noValidate>
@@ -101,6 +145,11 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
       >
         {loading ? 'Signing in…' : 'Sign in'}
       </Button>
+
+      {/* Google button target (rendered by Google Identity Services) */}
+      <div className="login-form__google">
+        <div className="login-form__google-btn" ref={googleButtonRef} />
+      </div>
 
       {/* Demo hint */}
       <div className="login-form__hint">
