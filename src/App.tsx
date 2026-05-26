@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Product, CartItem, Transaction, User } from './types';
+import { Product, CartItem, Transaction, User, GoodsMovement } from './types';
 import { PRODUCTS } from './data/products';
 import {
   Header,
@@ -47,10 +47,11 @@ const App: React.FC = () => {
   const [view, setView] = useState<AppView>('pos');
 
   /* ── POS state ── */
-  const [products,     setProducts]     = useState<Product[]>(PRODUCTS);
-  const [cart,         setCart]         = useState<CartItem[]>([]);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [toasts,       setToasts]       = useState<ToastData[]>([]);
+  const [products,       setProducts]       = useState<Product[]>(PRODUCTS);
+  const [cart,           setCart]           = useState<CartItem[]>([]);
+  const [transactions,   setTransactions]   = useState<Transaction[]>([]);
+  const [goodsMovements, setGoodsMovements] = useState<GoodsMovement[]>([]);
+  const [toasts,         setToasts]         = useState<ToastData[]>([]);
 
   /* ── Toast helpers ── */
   const pushToast = useCallback((data: Omit<ToastData, 'id'>) => {
@@ -79,6 +80,89 @@ const App: React.FC = () => {
     setCart(prev => prev.filter(i => i.product.id !== productId));
     pushToast({ type: 'info', message: `"${name}" deleted`, duration: 2500 });
   };
+
+  /* ── Goods movement handlers ── */
+  const handleStockIn = useCallback((
+    productId: string,
+    quantity:  number,
+    date:      Date,
+    notes:     string,
+  ) => {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+
+    /* Increase stock */
+    setProducts(prev =>
+      prev.map(p => p.id === productId ? { ...p, stock: p.stock + quantity } : p)
+    );
+
+    /* Record movement */
+    setGoodsMovements(prev => [
+      {
+        id:          Date.now().toString(),
+        type:        'in',
+        productId,
+        productName: product.name,
+        quantity,
+        date,
+        notes,
+      },
+      ...prev,
+    ]);
+
+    pushToast({
+      type:     'success',
+      message:  `📥 Stock in: ${product.name}`,
+      sub:      `+${quantity} units — new stock: ${product.stock + quantity}`,
+      duration: 3500,
+    });
+  }, [products, pushToast]);
+
+  const handleStockOut = useCallback((
+    productId: string,
+    quantity:  number,
+    date:      Date,
+    notes:     string,
+  ) => {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+
+    if (quantity > product.stock) {
+      pushToast({
+        type:     'error',
+        message:  'Insufficient stock',
+        sub:      `Only ${product.stock} "${product.name}" available`,
+        duration: 4000,
+      });
+      return;
+    }
+
+    /* Decrease stock */
+    setProducts(prev =>
+      prev.map(p => p.id === productId ? { ...p, stock: Math.max(0, p.stock - quantity) } : p)
+    );
+
+    /* Record movement */
+    setGoodsMovements(prev => [
+      {
+        id:          Date.now().toString(),
+        type:        'out',
+        productId,
+        productName: product.name,
+        quantity,
+        date,
+        notes,
+      },
+      ...prev,
+    ]);
+
+    pushToast({
+      type:     'info',
+      message:  `📤 Stock out: ${product.name}`,
+      sub:      `−${quantity} units — new stock: ${product.stock - quantity}`,
+      duration: 3500,
+    });
+  }, [products, pushToast]);
 
   /* ── Cart handlers ── */
   const handleAddToCart = useCallback((product: Product) => {
@@ -221,10 +305,13 @@ const App: React.FC = () => {
         <BackOffice
           products={products}
           transactions={transactions}
+          goodsMovements={goodsMovements}
           onGoToPOS={() => setView('pos')}
           onAddProduct={handleAddProduct}
           onUpdateProduct={handleUpdateProduct}
           onDeleteProduct={handleDeleteProduct}
+          onStockIn={handleStockIn}
+          onStockOut={handleStockOut}
           headerAction={userChip}
         />
         <ToastStack toasts={toasts} onDismiss={dismissToast} />

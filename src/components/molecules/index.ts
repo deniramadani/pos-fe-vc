@@ -8,3 +8,4 @@ export { ProductForm }      from './ProductForm';
 export { ProductRow }       from './ProductRow';
 export { TransactionRow }   from './TransactionRow';
 export { LoginForm }        from './LoginForm';
+export { GoodsMovementForm } from './GoodsMovementForm';

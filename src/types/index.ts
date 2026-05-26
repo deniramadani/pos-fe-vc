@@ -25,3 +25,15 @@ export interface Transaction {
   timestamp: Date;
   paymentMethod: 'cash' | 'card';
 }
+
+export type GoodsMovementType = 'in' | 'out';
+
+export interface GoodsMovement {
+  id:          string;
+  type:        GoodsMovementType;
+  productId:   string;
+  productName: string;
+  quantity:    number;
+  date:        Date;
+  notes:       string;
+}

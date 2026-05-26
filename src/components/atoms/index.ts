@@ -13,3 +13,5 @@ export { Toast }         from './Toast';
 export type { ToastData, ToastType }      from './Toast';
 
 export { ToastStack }    from './ToastStack';
+
+export { Modal }         from './Modal';

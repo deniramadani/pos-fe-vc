@@ -1,45 +1,57 @@
 import React, { useState } from 'react';
-import { Product, Transaction } from '../../types';
+import { GoodsMovement, Product, Transaction } from '../../types';
 import { Button } from '../atoms';
 import { Header } from './Header';
 import { DashboardPanel }        from './DashboardPanel';
 import { ProductManagerPanel }   from './ProductManagerPanel';
 import { TransactionLogPanel }   from './TransactionLogPanel';
+import { GoodsMovementPanel }    from './GoodsMovementPanel';
 import './BackOffice.css';
 
-type Tab = 'dashboard' | 'products' | 'transactions';
+type Tab = 'dashboard' | 'products' | 'transactions' | 'stock-in' | 'stock-out';
 
 const TABS: { id: Tab; icon: string; label: string }[] = [
   { id: 'dashboard',    icon: '📊', label: 'Dashboard' },
   { id: 'products',     icon: '📦', label: 'Products' },
-  { id: 'transactions', icon: '🧾', label: 'Transactions' },
+  { id: 'transactions', icon: '🧾', label: 'Sales' },
+  { id: 'stock-in',     icon: '📥', label: 'Stock In' },
+  { id: 'stock-out',    icon: '📤', label: 'Stock Out' },
 ];
 
 interface BackOfficeProps {
   products:        Product[];
   transactions:    Transaction[];
+  goodsMovements:  GoodsMovement[];
   onGoToPOS:       () => void;
   onAddProduct:    (data: Omit<Product, 'id'>) => void;
   onUpdateProduct: (product: Product) => void;
   onDeleteProduct: (productId: string) => void;
-  headerAction?:   React.ReactNode;   /* user chip + logout from App */
+  onStockIn:       (productId: string, quantity: number, date: Date, notes: string) => void;
+  onStockOut:      (productId: string, quantity: number, date: Date, notes: string) => void;
+  headerAction?:   React.ReactNode;
 }
 
 /**
- * Organism / Page — Back Office shell with tab navigation.
+ * Organism / Page — Back Office shell with 5-tab navigation.
  * Composes: Header (organism) + DashboardPanel, ProductManagerPanel,
- *           TransactionLogPanel (organisms) + Button (atom)
+ *           TransactionLogPanel, GoodsMovementPanel (organisms) + Button (atom)
  */
 export const BackOffice: React.FC<BackOfficeProps> = ({
   products,
   transactions,
+  goodsMovements,
   onGoToPOS,
   onAddProduct,
   onUpdateProduct,
   onDeleteProduct,
+  onStockIn,
+  onStockOut,
   headerAction,
 }) => {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
+
+  const inMovements  = goodsMovements.filter(m => m.type === 'in');
+  const outMovements = goodsMovements.filter(m => m.type === 'out');
 
   return (
     <div className="back-office">
@@ -87,6 +99,22 @@ export const BackOffice: React.FC<BackOfficeProps> = ({
         )}
         {activeTab === 'transactions' && (
           <TransactionLogPanel transactions={transactions} />
+        )}
+        {activeTab === 'stock-in' && (
+          <GoodsMovementPanel
+            type="in"
+            movements={inMovements}
+            products={products}
+            onSubmit={onStockIn}
+          />
+        )}
+        {activeTab === 'stock-out' && (
+          <GoodsMovementPanel
+            type="out"
+            movements={outMovements}
+            products={products}
+            onSubmit={onStockOut}
+          />
         )}
       </main>
     </div>
