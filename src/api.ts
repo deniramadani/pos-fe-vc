@@ -1,6 +1,8 @@
 import { CartItem, GoodsMovement, Product, Transaction, User } from './types';
 
-const API_BASE = (process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080/api/v1').replace(/\/+$/, '');
+const API_BASE = (process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080/').replace(/\/+$/, '');
+// eslint-disable-next-line no-console
+console.log('[api] API_BASE =', API_BASE);
 const TOKEN_KEY = 'pos-fe-vc-api-token';
 
 export function isBackendConfigured() {
@@ -57,6 +59,44 @@ export interface ApiGoodsMovement {
 export interface AuthResult {
   token: string;
   user: ApiUser;
+}
+
+// Login using a Google ID token. If a backend is configured, forward the ID token
+// to the backend for verification and exchange; otherwise parse the ID token
+// client-side and return a minimal AuthResult.
+export async function loginWithGoogle(idToken: string) {
+  if (isBackendConfigured()) {
+    const data = await request<AuthResult>('/auth/google', {
+      method: 'POST',
+      body: JSON.stringify({ id_token: idToken }),
+    });
+    return data;
+  }
+
+  // Parse JWT payload (base64url) to extract email/name
+  function parseJwtPayload(token: string) {
+    try {
+      const parts = token.split('.');
+      if (parts.length < 2) return null;
+      const payload = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      const json = decodeURIComponent(atob(payload).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(json);
+    } catch {
+      return null;
+    }
+  }
+
+  const p = parseJwtPayload(idToken) as any;
+  const user: ApiUser = {
+    id: p?.sub ? Number(String(p.sub).slice(0, 9)) : 0,
+    name: p?.name || p?.email || 'Google User',
+    email: p?.email || 'unknown@example.com',
+    role: 'cashier',
+  };
+
+  return { token: idToken, user } as AuthResult;
 }
 
 function buildUrl(path: string) {
@@ -150,7 +190,7 @@ function parseTransactionItem(item: ApiTransactionItem): CartItem {
 function parseTransaction(tx: ApiTransaction): Transaction {
   return {
     id: String(tx.id),
-    items: tx.items.map(parseTransactionItem),
+    items: (tx.items ?? []).map(parseTransactionItem),
     total: tx.total,
     paymentMethod: tx.payment_method,
     timestamp: new Date(tx.created_at),
@@ -181,9 +221,8 @@ export async function me() {
 }
 
 export async function listProducts() {
-  const data = await request<{ products?: ApiProduct[]; meta?: unknown }>('/products?limit=100');
-  const products = data?.products ?? [];
-  return products.map(parseProduct);
+  const data = await request<ApiProduct[]>('/products?limit=100');
+  return (data ?? []).map(parseProduct);
 }
 
 export async function createProduct(product: Omit<Product, 'id'>) {
@@ -214,9 +253,8 @@ export async function deleteProduct(id: string) {
 }
 
 export async function listTransactions() {
-  const data = await request<{ transactions?: ApiTransaction[]; meta?: unknown }>('/transactions?limit=100');
-  const transactions = data?.transactions ?? [];
-  return transactions.map(parseTransaction);
+  const data = await request<ApiTransaction[]>('/transactions?limit=100');
+  return (data ?? []).map(parseTransaction);
 }
 
 export async function checkoutTransaction(items: CartItem[], paymentMethod: 'cash' | 'card') {
@@ -237,9 +275,8 @@ export async function checkoutTransaction(items: CartItem[], paymentMethod: 'cas
 }
 
 export async function listGoodsMovements() {
-  const data = await request<{ movements?: ApiGoodsMovement[]; meta?: unknown }>('/goods-movements?limit=100');
-  const movements = data?.movements ?? [];
-  return movements.map(parseGoodsMovement);
+  const data = await request<ApiGoodsMovement[]>('/goods-movements?limit=100');
+  return (data ?? []).map(parseGoodsMovement);
 }
 
 export async function createGoodsMovement(

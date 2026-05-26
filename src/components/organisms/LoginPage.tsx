@@ -4,13 +4,14 @@ import './LoginPage.css';
 
 interface LoginPageProps {
   onLogin: (username: string, password: string) => boolean | Promise<boolean>;
+  onGoogle?: (idToken: string) => boolean | Promise<boolean>;
 }
 
 /**
  * Organism / Page — full-screen login with split-panel layout.
  * Left: navy brand panel.  Right: LoginForm molecule.
  */
-export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => (
+export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onGoogle }) => (
   <div className="login-page">
     {/* ── Left: brand panel ── */}
     <div className="login-page__brand" aria-hidden="true">
@@ -37,7 +38,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => (
 
     {/* ── Right: form panel ── */}
     <div className="login-page__form-panel">
-      <LoginForm onSubmit={onLogin} />
+      <LoginForm onSubmit={onLogin} onGoogle={onGoogle} />
     </div>
   </div>
 );

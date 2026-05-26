@@ -53,6 +53,26 @@ const App: React.FC = () => {
     return false;
   };
 
+  const handleGoogleSignIn = async (idToken: string): Promise<boolean> => {
+    try {
+      const result = await api.loginWithGoogle(idToken);
+      // If backend returned a token, store it and enable backend mode
+      if (result?.token) {
+        api.setStoredToken(result.token);
+        setBackendEnabled(!!process.env.REACT_APP_API_BASE_URL);
+      }
+      setCurrentUser({ username: result.user.email, role: result.user.role });
+      if (process.env.REACT_APP_API_BASE_URL) {
+        await loadBackendData();
+      }
+      return true;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Google sign-in failed';
+      pushToast({ type: 'error', message, duration: 4000 });
+      return false;
+    }
+  };
+
   const handleLogout = () => {
     api.setStoredToken(null);
     setCurrentUser(null);
@@ -74,7 +94,7 @@ const App: React.FC = () => {
 
   /* ── Toast helpers ── */
   const pushToast = useCallback((data: Omit<ToastData, 'id'>) => {
-    const id = Date.now().toString();
+    const id = crypto.randomUUID();
     setToasts(prev => [...prev, { ...data, id }]);
   }, []);
 
@@ -83,44 +103,59 @@ const App: React.FC = () => {
   }, []);
 
   const loadBackendData = useCallback(async () => {
-    try {
-      const [productsData, transactionsData, goodsMovementsData] = await Promise.all([
-        api.listProducts(),
-        api.listTransactions(),
-        api.listGoodsMovements(),
-      ]);
+    // Load each resource independently so a failure in one never blocks the others.
+    const results = await Promise.allSettled([
+      api.listProducts(),
+      api.listTransactions(),
+      api.listGoodsMovements(),
+    ]);
 
-      setProducts(productsData);
-      setTransactions(transactionsData);
-      setGoodsMovements(goodsMovementsData);
+    const [productsResult, transactionsResult, movementsResult] = results;
+
+    if (productsResult.status === 'fulfilled') {
+      setProducts(productsResult.value);
       setBackendEnabled(true);
-    } catch (error) {
+    } else {
       setBackendEnabled(false);
       pushToast({
         type: 'error',
-        message: 'Backend data could not be loaded. Falling back to local demo mode.',
+        message: 'Could not load products from backend.',
         duration: 4000,
       });
+    }
+
+    if (transactionsResult.status === 'fulfilled') {
+      setTransactions(transactionsResult.value);
+    }
+
+    if (movementsResult.status === 'fulfilled') {
+      setGoodsMovements(movementsResult.value);
     }
   }, [pushToast]);
 
   useEffect(() => {
+    let ignore = false;
+
     const restoreSession = async () => {
       const token = await api.authToken();
-      if (!token) return;
+      if (!token || ignore) return;
 
       try {
         const user = await api.me();
+        if (ignore) return;
         setCurrentUser({ username: user.email, role: user.role });
         setBackendEnabled(true);
         await loadBackendData();
       } catch {
+        if (ignore) return;
         api.setStoredToken(null);
         setBackendEnabled(false);
       }
     };
 
     restoreSession();
+
+    return () => { ignore = true; };
   }, [loadBackendData]);
 
   /* ── Product CRUD ── */
@@ -445,10 +480,10 @@ const App: React.FC = () => {
   ════════════════════════════════════════ */
 
   /* Not authenticated → show login */
-  if (!currentUser) {
+    if (!currentUser) {
     return (
       <>
-        <LoginPage onLogin={handleLogin} />
+        <LoginPage onLogin={handleLogin} onGoogle={handleGoogleSignIn} />
         <ToastStack toasts={toasts} onDismiss={dismissToast} />
       </>
     );

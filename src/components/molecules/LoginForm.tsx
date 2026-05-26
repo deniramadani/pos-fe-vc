@@ -17,6 +17,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, onGoogle }) => {
   const [error,    setError]    = useState('');
   const [loading,  setLoading]  = useState(false);
   const [showPass, setShowPass] = useState(false);
+  const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,9 +41,44 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, onGoogle }) => {
 
   /* Google Identity Services button */
   const googleButtonRef = React.useRef<HTMLDivElement | null>(null);
+
+  // Keep the callback in a ref so the effect below never needs to list it as a
+  // dependency — prevents re-initialising GIS every time the parent re-renders.
+  const onGoogleRef = React.useRef(onGoogle);
+  React.useEffect(() => { onGoogleRef.current = onGoogle; }, [onGoogle]);
+
+  // Track whether google.accounts.id.initialize() has already been called.
+  // This guards against React StrictMode's double-effect invocation in dev
+  // and against the script already being present on a re-mount.
+  const gisInitialisedRef = React.useRef(false);
+
   React.useEffect(() => {
-    const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
-    if (!clientId) return;
+    if (!googleClientId) return;
+
+    function initGoogle() {
+      // @ts-ignore - google identity script
+      if (!window.google || !googleButtonRef.current) return;
+      if (gisInitialisedRef.current) return; // already done — skip
+      gisInitialisedRef.current = true;
+
+      // @ts-ignore
+      google.accounts.id.initialize({
+        client_id: googleClientId,
+        callback: (resp: any) => {
+          const token = resp?.credential;
+          if (token && onGoogleRef.current) {
+            void (async () => {
+              setLoading(true);
+              const ok = await onGoogleRef.current!(token);
+              if (!ok) setError('Google sign-in failed');
+              setLoading(false);
+            })();
+          }
+        },
+      });
+      // @ts-ignore
+      google.accounts.id.renderButton(googleButtonRef.current, { theme: 'filled_blue', size: 'large' });
+    }
 
     const existing = document.getElementById('gsi-client');
     if (!existing) {
@@ -54,32 +90,17 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, onGoogle }) => {
       document.head.appendChild(s);
       s.onload = () => initGoogle();
     } else {
-      initGoogle();
-    }
-
-    function initGoogle() {
-      // @ts-ignore - google identity script
-      if (window.google && googleButtonRef.current) {
-        // @ts-ignore
-        google.accounts.id.initialize({
-          client_id: clientId,
-          callback: (resp: any) => {
-            const token = resp?.credential;
-            if (token && onGoogle) {
-              void (async () => {
-                setLoading(true);
-                const ok = await onGoogle(token);
-                if (!ok) setError('Google sign-in failed');
-                setLoading(false);
-              })();
-            }
-          },
-        });
-        // @ts-ignore
-        google.accounts.id.renderButton(googleButtonRef.current, { theme: 'filled_blue', size: 'large' });
+      // Script tag already in DOM — google may or may not be loaded yet.
+      // @ts-ignore
+      if (window.google) {
+        initGoogle();
+      } else {
+        document.getElementById('gsi-client')!.addEventListener('load', initGoogle);
       }
     }
-  }, [onGoogle]);
+  // googleClientId is stable (env var); intentionally omit onGoogle — using ref.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [googleClientId]);
 
   return (
     <form className="login-form" onSubmit={handleSubmit} noValidate>
@@ -148,7 +169,13 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, onGoogle }) => {
 
       {/* Google button target (rendered by Google Identity Services) */}
       <div className="login-form__google">
-        <div className="login-form__google-btn" ref={googleButtonRef} />
+        {googleClientId ? (
+          <div className="login-form__google-btn" ref={googleButtonRef} />
+        ) : (
+          <div className="login-form__google-note">
+            Google sign-in is hidden until you set `REACT_APP_GOOGLE_CLIENT_ID` in your `.env` and restart the dev server.
+          </div>
+        )}
       </div>
 
       {/* Demo hint */}
