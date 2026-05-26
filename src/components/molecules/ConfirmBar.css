@@ -1,0 +1,47 @@
+/* ── MOLECULE: ConfirmBar ───────────────────────────────── */
+.confirm-bar {
+  display:          flex;
+  align-items:      center;
+  gap:              var(--sp-3);
+  padding:          var(--sp-3) var(--sp-4);
+  background:       #fff5f5;
+  border:           1.5px solid var(--c-red);
+  border-radius:    var(--r-md);
+
+  /* slide-down entrance */
+  animation: confirmBarIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes confirmBarIn {
+  from { transform: translateY(-8px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.confirm-bar__icon {
+  font-size:   20px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.confirm-bar__message {
+  flex:        1;
+  font-size:   var(--fs-md);
+  font-weight: 600;
+  color:       var(--c-navy);
+  line-height: 1.3;
+}
+
+.confirm-bar__actions {
+  display:    flex;
+  gap:        var(--sp-2);
+  flex-shrink: 0;
+}
+
+/* Ghost button override: use red border to match the bar context */
+.confirm-bar .btn--ghost {
+  color:        var(--c-red);
+  border-color: var(--c-red);
+}
+.confirm-bar .btn--ghost:hover:not(:disabled) {
+  background: rgba(214, 40, 40, 0.06);
+}

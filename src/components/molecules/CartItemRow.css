@@ -1,0 +1,40 @@
+/* ── MOLECULE: CartItemRow ──────────────────────────────── */
+.cart-item-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--border-color);
+  border-radius: var(--r-md);
+  margin-bottom: var(--sp-2);
+  transition: border-color var(--transition);
+}
+
+.cart-item-row:hover {
+  border-color: rgba(0,48,73,0.22);
+}
+
+.cart-item-row__info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.cart-item-row__name {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--c-navy);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cart-item-row__controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}

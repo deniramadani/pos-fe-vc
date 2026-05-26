@@ -1,0 +1,58 @@
+/* ── MOLECULE: PaymentSelector ──────────────────────────── */
+.payment-selector {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.payment-selector__label {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+}
+
+.payment-selector__options {
+  display: flex;
+  gap: var(--sp-2);
+}
+
+.payment-selector__option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border: 2px solid var(--c-navy);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--c-navy);
+  transition: background var(--transition-fast),
+              color var(--transition-fast),
+              border-color var(--transition-fast);
+  user-select: none;
+}
+
+/* hide the native radio */
+.payment-selector__option input[type='radio'] {
+  display: none;
+}
+
+.payment-selector__icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.payment-selector__option:hover {
+  background: rgba(0, 48, 73, 0.06);
+}
+
+.payment-selector__option--active {
+  background: var(--c-navy);
+  color: #fff;
+  border-color: var(--c-navy);
+}

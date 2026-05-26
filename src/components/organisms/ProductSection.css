@@ -1,0 +1,35 @@
+/* ── ORGANISM: ProductSection ───────────────────────────── */
+.product-section {
+  width: 100%;
+  padding: var(--sp-5) var(--sp-6);
+}
+
+.product-section__heading {
+  font-size: var(--fs-2xl);
+  font-weight: 800;
+  color: var(--c-navy);
+  margin-bottom: var(--sp-6);
+  letter-spacing: -0.3px;
+}
+
+.product-section__group {
+  margin-bottom: var(--sp-6);
+}
+
+.product-section__category-label {
+  display: inline-block;
+  font-size: var(--fs-md);
+  font-weight: 700;
+  color: var(--c-navy);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding-bottom: var(--sp-2);
+  margin-bottom: var(--sp-4);
+  border-bottom: 3px solid var(--c-orange);
+}
+
+.product-section__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--sp-4);
+}

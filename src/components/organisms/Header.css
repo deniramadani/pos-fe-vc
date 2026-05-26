@@ -1,0 +1,53 @@
+/* ── ORGANISM: Header ───────────────────────────────────── */
+.header {
+  background: var(--c-navy);
+  color: #fff;
+  padding: 0 var(--sp-6);
+  height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  z-index: 10;
+}
+
+/* Orange → Yellow gradient accent line at bottom */
+.header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--c-orange) 0%, var(--c-yellow) 100%);
+}
+
+.header__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.header__icon {
+  font-size: 26px;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+}
+
+.header__title {
+  font-size: var(--fs-2xl);
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #fff;
+}
+
+.header__tagline {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(252, 191, 73, 0.75); /* --c-yellow at 75% */
+}

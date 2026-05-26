@@ -1,0 +1,24 @@
+/* ── ATOM: Badge ────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 9px;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.badge--navy   { background: var(--c-navy);   color: #fff; }
+.badge--orange { background: var(--c-orange); color: #fff; }
+.badge--yellow { background: var(--c-yellow); color: var(--c-navy); }
+.badge--red    { background: var(--c-red);    color: #fff; }
+.badge--cream  {
+  background: var(--c-cream);
+  color: var(--c-navy);
+  border: 1px solid rgba(0,48,73,0.25);
+}

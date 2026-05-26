@@ -1,0 +1,65 @@
+/* ============================================================
+   DESIGN TOKENS — POS Color System
+   Palette: Navy · Red · Orange · Yellow · Cream
+   ============================================================ */
+
+:root {
+  /* === Brand Colors === */
+  --c-navy:   #003049;
+  --c-red:    #D62828;
+  --c-orange: #F77F00;
+  --c-yellow: #FCBF49;
+  --c-cream:  #EAE2B7;
+
+  /* === Semantic Backgrounds === */
+  --bg-page:        var(--c-cream);
+  --bg-surface:     #ffffff;
+  --bg-surface-alt: #fefcf5;
+
+  /* === Text === */
+  --text-primary:  var(--c-navy);
+  --text-muted:    #7a6e5f;
+  --text-on-dark:  #ffffff;
+  --text-on-cream: var(--c-navy);
+
+  /* === Borders === */
+  --border-color:  rgba(0, 48, 73, 0.12);
+  --border:        1px solid var(--border-color);
+
+  /* === Typography === */
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          'Helvetica Neue', sans-serif;
+  --fs-xs:   11px;
+  --fs-sm:   12px;
+  --fs-md:   14px;
+  --fs-base: 16px;
+  --fs-lg:   18px;
+  --fs-xl:   20px;
+  --fs-2xl:  24px;
+  --fs-3xl:  28px;
+
+  /* === Spacing (4-pt grid) === */
+  --sp-1:  4px;
+  --sp-2:  8px;
+  --sp-3:  12px;
+  --sp-4:  16px;
+  --sp-5:  20px;
+  --sp-6:  24px;
+  --sp-8:  32px;
+  --sp-10: 40px;
+
+  /* === Border Radius === */
+  --r-sm:   4px;
+  --r-md:   8px;
+  --r-lg:   12px;
+  --r-pill: 999px;
+
+  /* === Shadows (navy-tinted) === */
+  --shadow-sm: 0 1px 3px  rgba(0, 48, 73, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 48, 73, 0.12);
+  --shadow-lg: 0 8px 24px rgba(0, 48, 73, 0.18);
+
+  /* === Transitions === */
+  --transition-fast: 0.15s ease;
+  --transition:      0.2s ease;
+}

@@ -1,0 +1,107 @@
+/* ── ORGANISM: CartPanel ────────────────────────────────── */
+.cart-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-surface);
+  padding: var(--sp-4);
+}
+
+/* ── Header ── */
+.cart-panel__header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-4);
+  flex-shrink: 0;
+}
+
+.cart-panel__title {
+  font-size: var(--fs-xl);
+  font-weight: 800;
+  color: var(--c-navy);
+  flex: 1;
+}
+
+.cart-panel__badge {
+  background: var(--c-orange);
+  color: #fff;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--r-pill);
+  letter-spacing: 0.3px;
+}
+
+/* ── Empty state ── */
+.cart-panel__empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  text-align: center;
+}
+
+.cart-panel__empty-icon {
+  font-size: 52px;
+  line-height: 1;
+  margin-bottom: var(--sp-2);
+  filter: grayscale(0.3) opacity(0.8);
+}
+
+.cart-panel__empty-text {
+  font-size: var(--fs-base);
+  font-weight: 600;
+  color: var(--c-navy);
+}
+
+.cart-panel__empty-hint {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+/* ── Item list — scrollable ── */
+.cart-panel__items {
+  flex: 1;
+  min-height: 0;          /* crucial for overflow-y inside flex */
+  overflow-y: auto;
+  margin-bottom: var(--sp-3);
+  padding-right: 2px;     /* room for scrollbar */
+}
+
+.cart-panel__items::-webkit-scrollbar {
+  width: 4px;
+}
+.cart-panel__items::-webkit-scrollbar-thumb {
+  background: rgba(0, 48, 73, 0.18);
+  border-radius: var(--r-pill);
+}
+
+/* ── Summary ── */
+.cart-panel__summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  flex-shrink: 0;
+  border-top: 2px solid var(--border-color);
+  padding-top: var(--sp-4);
+}
+
+.cart-panel__total {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ── Action buttons ── */
+.cart-panel__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.cart-panel__checkout-btn {
+  flex: 1;
+}
