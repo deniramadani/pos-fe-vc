@@ -158,6 +158,36 @@ const App: React.FC = () => {
     return () => { ignore = true; };
   }, [loadBackendData]);
 
+  /* ── Realtime polling ── */
+  useEffect(() => {
+    if (!backendEnabled) return;
+
+    /** Silently refresh products + transactions in the background. */
+    const poll = async () => {
+      const [productsResult, transactionsResult, movementsResult] = await Promise.allSettled([
+        api.listProducts(),
+        api.listTransactions(),
+        api.listGoodsMovements(),
+      ]);
+      if (productsResult.status === 'fulfilled')     setProducts(productsResult.value);
+      if (transactionsResult.status === 'fulfilled') setTransactions(transactionsResult.value);
+      if (movementsResult.status === 'fulfilled')    setGoodsMovements(movementsResult.value);
+    };
+
+    // Re-fetch immediately when the user returns to this tab.
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') void poll();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibility);
+    const timer = setInterval(() => void poll(), 10_000);
+
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [backendEnabled]);
+
   /* ── Product CRUD ── */
   const handleAddProduct = async (data: Omit<Product, 'id'>) => {
     if (backendEnabled) {
