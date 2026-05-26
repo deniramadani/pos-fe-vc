@@ -66,6 +66,24 @@ REACT_APP_API_BASE_URL=http://localhost:8080/api/v1
 
 The app also supports local demo login (`admin` / `admin`, `cashier` / `cashier`) when no backend is configured.
 
+### Google Sign-In
+
+The app supports signing in with Google using the Google Identity Services (GSI) client. To enable it in development:
+
+1. Create a Google OAuth 2.0 Client ID (Web application) in the Google Cloud Console.
+    - Add `http://localhost:3000` to **Authorized JavaScript origins** for local development.
+2. Add the client ID to your frontend environment (create a `.env` file in the project root):
+
+```bash
+REACT_APP_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+```
+
+3. Restart the dev server (`npm start`) so Create React App picks up the new env var.
+
+Notes:
+- If you run a backend that verifies Google ID tokens, implement a POST `/auth/google` endpoint that accepts `{ id_token }` and returns the same `AuthResult` shape used by email login (an auth `token` and `user` object). When present, the frontend will forward the Google ID token to that endpoint for server-side verification and token exchange.
+- If no backend is configured, the frontend will parse the Google ID token client-side and sign the user in for demo/UX purposes only — this is not a secure substitute for server-side token verification in production.
+
 ### Scripts
 
 | Command | Description |
