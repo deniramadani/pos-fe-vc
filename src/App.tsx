@@ -1,6 +1,6 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Product, CartItem, Transaction, User, GoodsMovement } from './types';
-import { PRODUCTS } from './data/products';
+import * as api from './api';
 import {
   Header,
   ProductSection,
@@ -26,28 +26,47 @@ const App: React.FC = () => {
   /* ── Auth ── */
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
-  const handleLogin = (username: string, password: string): boolean => {
+  const handleLogin = async (username: string, password: string): Promise<boolean> => {
+    if (username.includes('@')) {
+      try {
+        const result = await api.login(username, password);
+        api.setStoredToken(result.token);
+        setBackendEnabled(true);
+        setCurrentUser({ username: result.user.email, role: result.user.role });
+        await loadBackendData();
+        return true;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Login failed';
+        pushToast({ type: 'error', message, duration: 4000 });
+        return false;
+      }
+    }
+
     const match = USERS.find(
       u => u.username === username && u.password === password
     );
     if (match) {
       setCurrentUser({ username: match.username, role: match.role });
+      setBackendEnabled(false);
       return true;
     }
     return false;
   };
 
   const handleLogout = () => {
+    api.setStoredToken(null);
     setCurrentUser(null);
     setView('pos');
     setCart([]);
+    setBackendEnabled(false);
   };
 
   /* ── View ── */
   const [view, setView] = useState<AppView>('pos');
+  const [backendEnabled, setBackendEnabled] = useState(false);
 
   /* ── POS state ── */
-  const [products,       setProducts]       = useState<Product[]>(PRODUCTS);
+  const [products,       setProducts]       = useState<Product[]>([]);
   const [cart,           setCart]           = useState<CartItem[]>([]);
   const [transactions,   setTransactions]   = useState<Transaction[]>([]);
   const [goodsMovements, setGoodsMovements] = useState<GoodsMovement[]>([]);
@@ -63,19 +82,90 @@ const App: React.FC = () => {
     setToasts(prev => prev.filter(t => t.id !== id));
   }, []);
 
+  const loadBackendData = useCallback(async () => {
+    try {
+      const [productsData, transactionsData, goodsMovementsData] = await Promise.all([
+        api.listProducts(),
+        api.listTransactions(),
+        api.listGoodsMovements(),
+      ]);
+
+      setProducts(productsData);
+      setTransactions(transactionsData);
+      setGoodsMovements(goodsMovementsData);
+      setBackendEnabled(true);
+    } catch (error) {
+      setBackendEnabled(false);
+      pushToast({
+        type: 'error',
+        message: 'Backend data could not be loaded. Falling back to local demo mode.',
+        duration: 4000,
+      });
+    }
+  }, [pushToast]);
+
+  useEffect(() => {
+    const restoreSession = async () => {
+      const token = await api.authToken();
+      if (!token) return;
+
+      try {
+        const user = await api.me();
+        setCurrentUser({ username: user.email, role: user.role });
+        setBackendEnabled(true);
+        await loadBackendData();
+      } catch {
+        api.setStoredToken(null);
+        setBackendEnabled(false);
+      }
+    };
+
+    restoreSession();
+  }, [loadBackendData]);
+
   /* ── Product CRUD ── */
-  const handleAddProduct = (data: Omit<Product, 'id'>) => {
+  const handleAddProduct = async (data: Omit<Product, 'id'>) => {
+    if (backendEnabled) {
+      try {
+        const created = await api.createProduct(data);
+        setProducts(prev => [...prev, created]);
+        pushToast({ type: 'success', message: `"${created.name}" added`, duration: 2500 });
+        return;
+      } catch (error) {
+        pushToast({ type: 'error', message: 'Could not create product in backend', duration: 3500 });
+      }
+    }
+
     setProducts(prev => [...prev, { ...data, id: Date.now().toString() }]);
     pushToast({ type: 'success', message: `"${data.name}" added`, duration: 2500 });
   };
 
-  const handleUpdateProduct = (product: Product) => {
+  const handleUpdateProduct = async (product: Product) => {
+    if (backendEnabled) {
+      try {
+        const updated = await api.updateProduct(product);
+        setProducts(prev => prev.map(p => p.id === updated.id ? updated : p));
+        pushToast({ type: 'success', message: `"${updated.name}" updated`, duration: 2500 });
+        return;
+      } catch (error) {
+        pushToast({ type: 'error', message: 'Could not update product in backend', duration: 3500 });
+      }
+    }
+
     setProducts(prev => prev.map(p => p.id === product.id ? product : p));
     pushToast({ type: 'success', message: `"${product.name}" updated`, duration: 2500 });
   };
 
-  const handleDeleteProduct = (productId: string) => {
+  const handleDeleteProduct = async (productId: string) => {
     const name = products.find(p => p.id === productId)?.name ?? 'Product';
+    if (backendEnabled) {
+      try {
+        await api.deleteProduct(productId);
+      } catch (error) {
+        pushToast({ type: 'error', message: 'Could not delete product in backend', duration: 3500 });
+      }
+    }
+
     setProducts(prev => prev.filter(p => p.id !== productId));
     setCart(prev => prev.filter(i => i.product.id !== productId));
     pushToast({ type: 'info', message: `"${name}" deleted`, duration: 2500 });
@@ -91,32 +181,51 @@ const App: React.FC = () => {
     const product = products.find(p => p.id === productId);
     if (!product) return;
 
-    /* Increase stock */
-    setProducts(prev =>
-      prev.map(p => p.id === productId ? { ...p, stock: p.stock + quantity } : p)
-    );
+    const recordMovement = async () => {
+      if (backendEnabled) {
+        try {
+          const movement = await api.createGoodsMovement('in', productId, quantity, date, notes);
+          setGoodsMovements(prev => [movement, ...prev]);
+          setProducts(prev =>
+            prev.map(p => p.id === productId ? { ...p, stock: p.stock + quantity } : p)
+          );
+          pushToast({
+            type:     'success',
+            message:  `📥 Stock in: ${product.name}`,
+            sub:      `+${quantity} units — new stock: ${product.stock + quantity}`,
+            duration: 3500,
+          });
+          return;
+        } catch {
+          pushToast({ type: 'error', message: 'Could not save stock-in movement to backend', duration: 3500 });
+        }
+      }
 
-    /* Record movement */
-    setGoodsMovements(prev => [
-      {
-        id:          Date.now().toString(),
-        type:        'in',
-        productId,
-        productName: product.name,
-        quantity,
-        date,
-        notes,
-      },
-      ...prev,
-    ]);
+      setProducts(prev =>
+        prev.map(p => p.id === productId ? { ...p, stock: p.stock + quantity } : p)
+      );
+      setGoodsMovements(prev => [
+        {
+          id:          Date.now().toString(),
+          type:        'in',
+          productId,
+          productName: product.name,
+          quantity,
+          date,
+          notes,
+        },
+        ...prev,
+      ]);
+      pushToast({
+        type:     'success',
+        message:  `📥 Stock in: ${product.name}`,
+        sub:      `+${quantity} units — new stock: ${product.stock + quantity}`,
+        duration: 3500,
+      });
+    };
 
-    pushToast({
-      type:     'success',
-      message:  `📥 Stock in: ${product.name}`,
-      sub:      `+${quantity} units — new stock: ${product.stock + quantity}`,
-      duration: 3500,
-    });
-  }, [products, pushToast]);
+    void recordMovement();
+  }, [backendEnabled, products, pushToast]);
 
   const handleStockOut = useCallback((
     productId: string,
@@ -137,32 +246,51 @@ const App: React.FC = () => {
       return;
     }
 
-    /* Decrease stock */
-    setProducts(prev =>
-      prev.map(p => p.id === productId ? { ...p, stock: Math.max(0, p.stock - quantity) } : p)
-    );
+    const recordMovement = async () => {
+      if (backendEnabled) {
+        try {
+          const movement = await api.createGoodsMovement('out', productId, quantity, date, notes);
+          setGoodsMovements(prev => [movement, ...prev]);
+          setProducts(prev =>
+            prev.map(p => p.id === productId ? { ...p, stock: Math.max(0, p.stock - quantity) } : p)
+          );
+          pushToast({
+            type:     'info',
+            message:  `📤 Stock out: ${product.name}`,
+            sub:      `−${quantity} units — new stock: ${product.stock - quantity}`,
+            duration: 3500,
+          });
+          return;
+        } catch {
+          pushToast({ type: 'error', message: 'Could not save stock-out movement to backend', duration: 3500 });
+        }
+      }
 
-    /* Record movement */
-    setGoodsMovements(prev => [
-      {
-        id:          Date.now().toString(),
-        type:        'out',
-        productId,
-        productName: product.name,
-        quantity,
-        date,
-        notes,
-      },
-      ...prev,
-    ]);
+      setProducts(prev =>
+        prev.map(p => p.id === productId ? { ...p, stock: Math.max(0, p.stock - quantity) } : p)
+      );
+      setGoodsMovements(prev => [
+        {
+          id:          Date.now().toString(),
+          type:        'out',
+          productId,
+          productName: product.name,
+          quantity,
+          date,
+          notes,
+        },
+        ...prev,
+      ]);
+      pushToast({
+        type:     'info',
+        message:  `📤 Stock out: ${product.name}`,
+        sub:      `−${quantity} units — new stock: ${product.stock - quantity}`,
+        duration: 3500,
+      });
+    };
 
-    pushToast({
-      type:     'info',
-      message:  `📤 Stock out: ${product.name}`,
-      sub:      `−${quantity} units — new stock: ${product.stock - quantity}`,
-      duration: 3500,
-    });
-  }, [products, pushToast]);
+    void recordMovement();
+  }, [backendEnabled, products, pushToast]);
 
   /* ── Cart handlers ── */
   const handleAddToCart = useCallback((product: Product) => {
@@ -239,32 +367,60 @@ const App: React.FC = () => {
 
     const total = validatedCart.reduce((s, i) => s + i.product.price * i.quantity, 0);
 
-    /* Decrement stock for each item */
-    setProducts(prev =>
-      prev.map(p => {
-        const sold = validatedCart.find(i => i.product.id === p.id);
-        return sold ? { ...p, stock: Math.max(0, p.stock - sold.quantity) } : p;
-      })
-    );
+    const completeCheckout = async () => {
+      if (backendEnabled) {
+        try {
+          const txn = await api.checkoutTransaction(validatedCart, paymentMethod);
+          setTransactions(prev => [txn, ...prev]);
+          setCart([]);
+          setProducts(prev =>
+            prev.map(p => {
+              const sold = validatedCart.find(i => i.product.id === p.id);
+              return sold ? { ...p, stock: Math.max(0, p.stock - sold.quantity) } : p;
+            })
+          );
+          pushToast({
+            type:     'success',
+            message:  'Transaction complete!',
+            sub:      `$${total.toFixed(2)} paid by ${paymentMethod === 'cash' ? '💵 cash' : '💳 card'}`,
+            duration: 4000,
+          });
+          return;
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Checkout failed';
+          pushToast({ type: 'error', message, duration: 4000 });
+          return;
+        }
+      }
 
-    setTransactions(prev => [
-      {
-        id: Date.now().toString(),
-        items: validatedCart,
-        total,
-        timestamp: new Date(),
-        paymentMethod,
-      },
-      ...prev,
-    ]);
-    setCart([]);
-    pushToast({
-      type:     'success',
-      message:  'Transaction complete!',
-      sub:      `$${total.toFixed(2)} paid by ${paymentMethod === 'cash' ? '💵 cash' : '💳 card'}`,
-      duration: 4000,
-    });
-  }, [cart, products, pushToast]);
+      setProducts(prev =>
+        prev.map(p => {
+          const sold = validatedCart.find(i => i.product.id === p.id);
+          return sold ? { ...p, stock: Math.max(0, p.stock - sold.quantity) } : p;
+        })
+      );
+
+      setTransactions(prev => [
+        {
+          id: Date.now().toString(),
+          items: validatedCart,
+          total,
+          timestamp: new Date(),
+          paymentMethod,
+        },
+        ...prev,
+      ]);
+      setCart([]);
+      pushToast({
+        type:     'success',
+        message:  'Transaction complete!',
+        sub:      `$${total.toFixed(2)} paid by ${paymentMethod === 'cash' ? '💵 cash' : '💳 card'}`,
+        duration: 4000,
+      });
+    };
+
+    void completeCheckout();
+  }, [backendEnabled, cart, products, pushToast]);
 
   const handleClearCart = () => {
     setCart([]);

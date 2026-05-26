@@ -3,7 +3,7 @@ import { LoginForm } from '../molecules';
 import './LoginPage.css';
 
 interface LoginPageProps {
-  onLogin: (username: string, password: string) => boolean;
+  onLogin: (username: string, password: string) => boolean | Promise<boolean>;
 }
 
 /**

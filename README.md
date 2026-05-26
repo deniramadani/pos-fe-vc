@@ -54,6 +54,18 @@ npm start
 
 Opens at `http://localhost:3000`.
 
+### Backend API
+
+The frontend can optionally connect to a REST backend at `REACT_APP_API_BASE_URL`.
+
+The default API base is `http://localhost:8080/api/v1`, but you can host the backend anywhere and set it in a `.env` file:
+
+```bash
+REACT_APP_API_BASE_URL=http://localhost:8080/api/v1
+```
+
+The app also supports local demo login (`admin` / `admin`, `cashier` / `cashier`) when no backend is configured.
+
 ### Scripts
 
 | Command | Description |

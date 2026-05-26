@@ -3,7 +3,7 @@ import { Button } from '../atoms';
 import './LoginForm.css';
 
 interface LoginFormProps {
-  onSubmit: (username: string, password: string) => boolean;
+  onSubmit: (username: string, password: string) => boolean | Promise<boolean>;
 }
 
 /**
@@ -30,7 +30,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
     /* brief artificial delay — feels less jarring than instant swap */
     await new Promise(r => setTimeout(r, 500));
 
-    const ok = onSubmit(username.trim(), password);
+    const ok = await onSubmit(username.trim(), password);
     if (!ok) {
       setError('Incorrect username or password. Please try again.');
     }
@@ -53,13 +53,13 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
       <div className="login-form__fields">
         {/* Username */}
         <label className="login-form__field">
-          <span className="login-form__label">Username</span>
+          <span className="login-form__label">Email or username</span>
           <input
             className="login-form__input"
             type="text"
             value={username}
             onChange={e => { setUsername(e.target.value); setError(''); }}
-            placeholder="Enter your username"
+            placeholder="Enter your email or username"
             autoComplete="username"
             autoFocus
             disabled={loading}
@@ -104,7 +104,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
 
       {/* Demo hint */}
       <div className="login-form__hint">
-        <p className="login-form__hint-title">Demo accounts</p>
+        <p className="login-form__hint-title">Demo login</p>
         <div className="login-form__hint-row">
           <span className="login-form__hint-role">Admin</span>
           <code>admin</code> / <code>admin</code>
@@ -113,6 +113,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
           <span className="login-form__hint-role">Cashier</span>
           <code>cashier</code> / <code>cashier</code>
         </div>
+        <p className="login-form__hint-note">
+          Or sign in with backend auth using your account email.
+        </p>
       </div>
     </form>
   );
